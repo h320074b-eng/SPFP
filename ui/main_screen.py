@@ -63,13 +63,18 @@ class MainScreen:
             # 最新の株価5日分
             st.dataframe(csv_data.tail())
 
+            # グラフオブジェクト
+            fig = go.Figure()
+
             # 株価推移グラフ
             graph_data = csv_data.reset_index()
-            fig = px.line(
-                graph_data,
-                x="Date",
-                y="Close",
-                title=f"{ticker} 株価推移"
+            fig.add_trace(
+                go.Scatter(
+                    x=graph_data["Date"],
+                    y=graph_data["Close"],
+                    mode="lines",
+                    name="終値"
+                )
             )
 
             # ローソク足

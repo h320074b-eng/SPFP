@@ -96,7 +96,7 @@ class MainScreen:
                 .mean()
             )
 
-            # コメント
+            # コメントを追加
             fig.add_trace(
                 go.Scatter(
                     x=graph_data["Date"],

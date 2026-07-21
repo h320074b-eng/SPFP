@@ -1,14 +1,20 @@
 import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
+import numpy as np
+import pandas as pd
 
 from data.stock_data import StockData
+from analysis.feature_engineering import Feature_engineering
+from analysis.models.base_model import BaseModel
+from analysis.models.fourier_model import FourierModel
 
 class MainScreen:
 
     # コンストラクタ
     def __init__(self):
         self.stock_data = StockData()
+        self.feature_engineering = Feature_engineering
 
     # 画面表示関数
     def show(self):
@@ -44,6 +50,16 @@ class MainScreen:
             200
             ],
             index=1  # 25日を初期値
+        )
+
+        model_period = st.selectbox(
+            "予測手法",
+            [
+            "フーリエ解析",
+            "ランダムフォレスト",
+            "LSTM"
+            ],
+            index=0  # フーリエ変換を初期値
         )
 
         if st.button("データ取得"):
@@ -96,7 +112,6 @@ class MainScreen:
                 .mean()
             )
 
-            # コメントを追加
             fig.add_trace(
                 go.Scatter(
                     x=graph_data["Date"],
@@ -105,6 +120,32 @@ class MainScreen:
                     name=f"MA{ma_period}"
                 )
             )
+            
+
+            # 予測手法の決定
+            if model_period == "フーリエ解析": # FFT
+                self.model: BaseModel  = FourierModel()
+                prediction = self.model.predict(
+                    graph_data,
+                    {
+                        "future_days": 30
+                    }
+
+                )
+                future_dates = pd.date_range(
+                    start=graph_data["Date"].iloc[-1],
+                    periods=31,
+                    freq="D"
+                )[1:]
+
+                fig.add_trace(
+                    go.Scatter(
+                        x=future_dates,
+                        y=prediction[-30:],
+                        mode="lines",
+                        name="FFT予測"
+                    )
+                )
             st.plotly_chart(
                 fig,
                 use_container_width=True

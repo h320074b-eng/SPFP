@@ -74,4 +74,10 @@ class FourierModel(BaseModel):
                 reconstructed
                 + extended_trend
             )
-            return prediction
+
+            offset = (
+                df["Close"].iloc[-1]
+                - prediction[len(df)-1]
+            )
+
+        return prediction + offset
